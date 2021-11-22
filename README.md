@@ -1,7 +1,7 @@
 # AIClassProject
 - Ryan Romero         rromero26@csu.fullerton.edu
-- Peter Bergeon       pbschoolwork@gmail.com
-- Brian Edwards       
+- Peter Bergeon       email@csu.fullerton.edu
+- Brian Edwards       email@csu.fullerton.edu
 
 # Project Description
 Despite every member of the group attending fullerton for over 3+ years, many of us still struggle navigating the CSUF portal/domain, as well as the updated Student Center. We want to offer a solution to that small problem. 
