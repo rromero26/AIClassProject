@@ -11,30 +11,37 @@ with open("intents.json") as file:
     data = json.load(file)
 
 words = []
-labels = []
+classes = []
 docs = []
+ignore_characters = ['?', '!']
 
 # SETS ALL LISTS ABOVE
 for intent in data["intents"]:
     # set "words" and "docs" lists
-    for pattern in intent["pattern"]:
-        wordList = nltk.word_tokenize(pattern)
-        words.extend(wordList)
-        docs.append((wordList, intent["tag"]))
+    for pattern in intent["patterns"]:
+        w = nltk.word_tokenize(pattern)
+        words.extend(w)
+        docs.append((w, intent["tag"]))
 
-    # set "labels" list
-    if intent["tag"] not in labels:
-        labels.append(intent["tag"])
+    # set "classes" list
+    if intent["tag"] not in classes:
+        classes.append(intent["tag"])
 
-# remove duplicates in 'words" and "labels"
-words = [lemmatizer.lemmatize(w.lower()) for w in words if w != "?"]
-words = sorted(set(words))
-labels = sorted(set(labels))
+# remove duplicates in 'words" and "classes"
+words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_characters]
+words = sorted(list(set(words)))
+classes = sorted(list(set(classes)))
 
-# TRAINING
+# CHECKPOINT: Test
+print("documents: ", len(documents))
+print("classes: ", len(classes), classes)
+print("Unique words: ", len(words), words)
+
+
+# TRAINING (Deep Learning)
 training = []
 output = []
-out_empty = [0] * len(labels)
+out_empty = [0] * len(classes)
 
 for doc in docs:
     bag = []
@@ -47,7 +54,7 @@ for doc in docs:
             bag.append(0)
 
     output_row = list(out_empty)
-    output_row[labels.index(doc[1])] = 1
+    output_row[classes.index(doc[1])] = 1
     training.append(bag)
     output.append(output_row)
 
