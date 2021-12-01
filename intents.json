@@ -1,12 +1,19 @@
-{"intents":
-  [
+{"intents": [
     {"tag": "greetings",
-      "pattern": ["hey", "hi", "hello", "whats up", "Anyone there", "Sup"],
+      "patterns": ["hey", "hi", "hello", "whats up", "Anyone there", "Sup", "Hey there", "Morning", "Afternoon"],
       "responses": ["Hello! How can I help?", "Hey there!", "What can I do for you?"],
+      "context": [""]
     },
     {"tag": "bye",
-      "pattern": ["bye", "later", "cya", "have a good day", "see ya", "thank you"],
-      "responses": ["Thanks for talking to me! Have a great day!."]
+      "patterns": ["bye", "later", "cya", "have a good day", "see ya", "thank you", "Thanks for helping me", "Awesome, thanks"],
+      "responses": ["Thanks for talking to me! Have a great day!"],
+      "context": [""]
     },
+    {
+      "tag": "name",
+      "patterns": ["who are you", "what is your name", "who is this"],
+      "responses": ["I am the CSUF Portal Bot! I can help answer your questions about the CSUF Portal!"],
+      "context": [""]
+    }
 
 ]}
