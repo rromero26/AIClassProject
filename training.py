@@ -1,109 +1,89 @@
 import random
 import json
-import numpy as np      # Must install library via command line
-import tflearn
-import tensorflow
 import pickle
+import numpy as np      # Must install library via command line
 import nltk             # Must install library via command line
+
 from nltk.stem import WordNetLemmatizer
+from tensorflow.keras.models import Sequential  # Must install library via command line
+from tensorflow.keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.optimizers import SGD
+
 lemmatizer = WordNetLemmatizer()
 
 # Open json file and load in data into a variable
 with open("intents.json") as file:
     data = json.load(file)
 
-try:
-    with open("data.pickle", "rb") as f:
-        words, classes, training, output = pickle.load(f)
+# create dictionaries to separate data in
+words = []
+classes = []
+docs = []
+ignore_characters = ['?', '!', '.', ',']
 
-except:
-    # create dictionaries to separate data in
-    words = []
-    classes = []
-    docs = []
-    ignore_characters = ['?', '!', '.', ',']
+# look into the data dictionaries
+for intent in data["intents"]:
+    for pattern in intent["patterns"]:
+        # set data dictionaries for lists "words" and "docs"
+        word_List = nltk.word_tokenize(pattern)
+        words.extend(word_List)
+        docs.append((word_List, intent["tag"]))
 
-    # Set all lists created above
-    for intent in data["intents"]:
-        for pattern in intent["patterns"]:
-            # set "words" and "docs" lists
-            w = nltk.word_tokenize(pattern)
-            words.extend(w)
-            docs.append((w, intent["tag"]))
+    # set data dictionaries for list "classes"
+    if intent["tag"] not in classes:
+        classes.append(intent["tag"])
 
-        # set "classes" list
-        if intent["tag"] not in classes:
-            classes.append(intent["tag"])
+# lematize and remove duplicates in 'words" and "classes" lists
+words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_characters]
+words = sorted(set(words))
+classes = sorted(set(classes))
 
-    # lematize and remove duplicates in 'words" and "classes" lists
-    words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_characters]
-    words = sorted(list(set(words)))
-    classes = sorted(list(set(classes)))
+pickle.dump(words, open("words.pkl", "wb"))
+pickle.dump(classes, open("classes.pkl", "wb"))
 
 
-    # --------------------------------------------------------
-    # CHECKPOINT:
-    #   What we done: created and populated all the lists.
-    print("documents: ", len(documents))
-    print("classes: ", len(classes), classes)
-    print("Unique words: ", len(words), words)
-    # --------------------------------------------------------
+
+# TRAINING (Deep Learning)
+training = []
+output_Empty = [0] * len(classes)
+
+for document in docs:
+    bag = []
+    word_Pattern = document[0]
+    word_Pattern = [lemmatizer.lemmatize(w.lower()) for w in word_Pattern]
+    for w in words:
+        if w in word_Pattern:
+            bag.append(1)
+        else:
+            bag.append(0)
+
+    output_Row = list(output_Empty)
+    output_Row[classes.index(document[1])] = 1
+    training.append([bag, output_Row])
+
+# shuffle training data and converting it to array
+random.shuffle(training)
+training = np.array(training)
+
+# spit training data into X and Y values
+training_X = list(training[:, 0])
+training_Y = list(training[:, 1])
 
 
-    # TRAINING (Deep Learning)
-    training = []
-    output = []
-    out_empty = [0] * len(classes)
-
-    for document in docs:
-        bag = []
-        word_pattern = document[0]
-        word_pattern = [lemmatizer.lemmatize(w.lower()) for w in word_pattern]
-        for w in words:
-            if w in word_pattern:
-                bag.append(1)
-            else:
-                bag.append(0)
-
-        output_row = list(out_empty)
-        output_row[classes.index(document[1])] = 1
-        training.append(bag)
-        output.append(output_row)
-
-    training = np.array(training)
-    output = np.array(output)
-
-    with open("data.pickle", "wb") as f:
-        pickle.dump((words, classes, training, output), f)
 # ---------------------------------------------------------------------------
+# The AI (The neural network, copied from NeuralNine tutorial "Intelligent AI Chatbot")
 
-# The AI (simple neural network)
-tensorflow.reset_default_graph()
-net = tflearn.input_data(shape=[None, len(training[0])])
-net = tflearn.fully_connected(net, 8)
-net = tflearn.fully_connected(net, 8)
-net = tflearn.fully_connected(net, len(output[0]), activation="softmax")
-net = tflearn.regression(net)
+model = Sequential()
+model.add(Dense(128, input_shape=(len(training_X[0]),), activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(len(training_Y[0]), activation='softmax'))
+sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+myModel = model.fit(np.array(training_X), np.array(training_Y), epochs=200, batch_size=5, verbose=1)
 
-model = tflearn.DNN(net)
+model.save('chatbot_Model.h5', myModel)
+print("Done")
 
-# create/open training model
-try:
-    model.load("model.tflearn")
-
-except:
-    # Pass training data to our network
-    model.fit(training, output, n_epoch=1000, batch_size=8, show_metric=True)
-    model.save("model.tflearn")
-
-def bag_of_words (s, words):
-    bag = [0 for _ in range(len(words))]
-    s_words = nltk.word_tokenize(s)
-    s_words = lemmatizer.lemmatize(w.lower()) for w in word_pattern
-
-    for se in s_words:
-        for i, w in enumerate(words):
-            if w == se:
-                bag[i] = 1
-
-    return numpy.array(bag)
+# ---------------------------------------------------------------------------
