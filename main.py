@@ -24,15 +24,15 @@ model = load_model("chatbot_Model.h5")
 # ----- Helper Functions -----
 
 # clean_up_sentences:
-#       lowercase and stems words to their root word
+#       lowercase and stems(root) user's string
 def clean_up_sentences(userString):
     sentence = nltk.word_tokenize(userString)
     sentence = [lemmatizer.lemmatize(word.lower()) for word in sentence]
     return sentence
 
 # bag_of_words:
-#       convert sentence to bag of words. A list of 0s and 1s that indiciate
-#       if a word exist or not in the sentence
+#       convert user's string to a bag-of-words. A list of 0s and 1s that indiciate
+#       if a word exist in the complete-list-of-words saved in training.py
 def bag_of_words(userString):
     sentence = clean_up_sentences(userString)
     bag = [0]* len(words)
@@ -51,13 +51,17 @@ def bag_of_words(userString):
 def chatBot(userString):
     currentBag = bag_of_words(userString)
     result = model.predict(np.array([currentBag]))[0]
+    # print("Result: ", result, "\n")
+
 
     # get the highest numerical value prediction
     result_index = np.argmax(result)
+    # print("Highest Result Index: ", result_index, "\n")
+
     # get the tag associated to the highest numerical value prediction
     tag = classes[result_index]
 
-    # If percentage is greater then 75%
+    # IF: percentage is greater then 75%
     if result[result_index] > 0.75:
         # we grab the list of responds and choose one at random
         for tg in data["intents"]:
@@ -65,7 +69,7 @@ def chatBot(userString):
                 responses = tg['responses']
         print(random.choice(responses))
 
-    # Else, we print out a confused bot response
+    # ELSE: we print out a confused bot response
     else:
         print("Sorry, I didn' understand. Try asking again.")
 
