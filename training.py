@@ -1,8 +1,6 @@
-# What does this file do?
+# What Does This File Do?
 #   this file is run before main and used to train the bot with the dataset in
-#   the json file. Everytime dataset is modified, the bot must be retrain.
-#   After running training.py. 3 files will be created:
-#       words.pkl, classes.pkl, chatbot_Model.h5
+#   the json file. Everytime dataset is modified, the bot must be re-trained.
 
 import random
 import json
@@ -21,57 +19,81 @@ lemmatizer = WordNetLemmatizer()
 with open("intents.json") as file:
     data = json.load(file)
 
-# create lists. Dataset from json file will be organized into these lists
+# create lists. (Dataset from json file will be organized into these lists)
 words = []
 classes = []
 docs = []
 ignore_characters = ['?', '!', '.', ',']
 
-# parse through the data
-for intent in data["intents"]:
-    for pattern in intent["patterns"]:
-        # populate lists "words" and "docs"
-        word_List = nltk.word_tokenize(pattern)
-        words.extend(word_List)
-        docs.append((word_List, intent["tag"]))
+# parse through the data and save it into lists
+for intent in data["intents"]:                      # parse every "tag" chunk
+    for pattern in intent["patterns"]:              # grabs list of words in "patterns" of current "tag"
+        word_List = nltk.word_tokenize(pattern)     # tokenize words
+        words.extend(word_List)                     # add it to a complete list of words
+        docs.append((word_List, intent["tag"]))     # assigns current list of words to the current "tag" (greetings = hello, hey, whats up, ...)
 
-    # spopulate list "classes"
-    if intent["tag"] not in classes:
+    # saves list of "tags" (classes)
+    if intent["tag"] not in classes:                # (classes = greetings, bye, advising, ...)
         classes.append(intent["tag"])
 
-# lematize and remove duplicates in 'words" and "classes" lists
+# lematize (stem) "words" and remove duplicates in lists 'words" and "classes"
 words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_characters]
 words = sorted(set(words))
 classes = sorted(set(classes))
 
-# create files to dump "words" and "classes" lists
+# create files to save "words" and "classes" lists (as writing binary)
 pickle.dump(words, open("words.pkl", "wb"))
 pickle.dump(classes, open("classes.pkl", "wb"))
 
+# CHECKPOINT:
+#   So far, we have a complete list of stem words that function like keywords.
+#   We also have a list of tags which are the name of each chunk in the json file.
+#   We also have a list that connect a tag with it corresponding list of keywords
 
-# TRAINING (Deep Learning)
+
+# TRAINING BEGINS (Deep Learning)
+#   Will be using a one-hot encoded strategy. We will create a binary list the same size
+#   as the complete list of words, each bit representing a word in that list.
+#   We have list of words and character but need numerical values to feed to
+#   the neural network which trains the AI bot.
 training = []
-output_Empty = [0] * len(classes)
+output_Empty = [0] * len(classes)          # inital binary list of classes (tags)
 
-for document in docs:
+for document in docs:                       # create bag of words
     bag = []
-    word_Pattern = document[0]
+    word_Pattern = document[0]              # document[0] = the list of key words of current tag
     word_Pattern = [lemmatizer.lemmatize(w.lower()) for w in word_Pattern]
+
+    # compare each word in complete list of keywords to current tag's list of keywords
     for w in words:
-        if w in word_Pattern:
+        if w in word_Pattern:               # IF: it exist in current tag's list of words, append 1
             bag.append(1)
-        else:
+        else:                               # ELSE: does not exist in current tag's list of words, append 0
             bag.append(0)
 
     output_Row = list(output_Empty)
     output_Row[classes.index(document[1])] = 1
     training.append([bag, output_Row])
 
-# shuffle training data and converting it to array
+# CHECKPOINT:
+#   Every tag now has a binary list, that the size of the complete list of keywords, with 0s and 1s
+#   representing the words that are present in their list of words.
+#   example:
+#       Complete list = {hello, goodbye, morning, advising, schedule}
+#           Greetings Bag    = {1, 0, 1, 0, 0}
+#           Farewell Bag     = {0, 1, 0, 0, 0}
+#           Advising bag     = {0, 0, 0, 1, 1}
+#
+#   binary word bags and their coresponding tags (also in binary) are then saved
+#   into dictoary "training" which will be fed into the neural network next.
+
+
+
+# shuffle training data and converting it to array (string to numbers)
 random.shuffle(training)
 training = np.array(training)
 
-# spit training data into X and Y values
+# spit training data into X (word bags) and Y (tags)
 training_X = list(training[:, 0])
 training_Y = list(training[:, 1])
 
