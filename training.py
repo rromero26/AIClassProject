@@ -1,8 +1,14 @@
+# What does this file do?
+#   this file is run before main and used to train the bot with the dataset in
+#   the json file. Everytime dataset is modified, the bot must be retrain.
+#   After running training.py. 3 files will be created:
+#       words.pkl, classes.pkl, chatbot_Model.h5
+
 import random
 import json
 import pickle
-import numpy as np      # Must install library via command line
-import nltk             # Must install library via command line
+import numpy as np                              # Must install library via command line
+import nltk                                     # Must install library via command line
 
 from nltk.stem import WordNetLemmatizer
 from tensorflow.keras.models import Sequential  # Must install library via command line
@@ -11,25 +17,25 @@ from tensorflow.keras.optimizers import SGD
 
 lemmatizer = WordNetLemmatizer()
 
-# Open json file and load in data into a variable
+# Open json file and load in the dataset into variable "data"
 with open("intents.json") as file:
     data = json.load(file)
 
-# create dictionaries to separate data in
+# create lists. Dataset from json file will be organized into these lists
 words = []
 classes = []
 docs = []
 ignore_characters = ['?', '!', '.', ',']
 
-# look into the data dictionaries
+# parse through the data
 for intent in data["intents"]:
     for pattern in intent["patterns"]:
-        # set data dictionaries for lists "words" and "docs"
+        # populate lists "words" and "docs"
         word_List = nltk.word_tokenize(pattern)
         words.extend(word_List)
         docs.append((word_List, intent["tag"]))
 
-    # set data dictionaries for list "classes"
+    # spopulate list "classes"
     if intent["tag"] not in classes:
         classes.append(intent["tag"])
 
@@ -38,9 +44,9 @@ words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_chara
 words = sorted(set(words))
 classes = sorted(set(classes))
 
+# create files to dump "words" and "classes" lists
 pickle.dump(words, open("words.pkl", "wb"))
 pickle.dump(classes, open("classes.pkl", "wb"))
-
 
 
 # TRAINING (Deep Learning)
@@ -87,3 +93,5 @@ model.save('chatbot_Model.h5', myModel)
 print("Done")
 
 # ---------------------------------------------------------------------------
+
+# The AI (simple neural network)
