@@ -12,6 +12,7 @@ from tensorflow.keras.models import load_model
 
 # ----- Setup -----
 lemmatizer = WordNetLemmatizer()
+
 with open("intents.json") as file:
     data = json.load(file)
 
@@ -42,7 +43,7 @@ def bag_of_words(userString):
 
     return np.array(bag)
 
-# chatBot
+# chatBot:
 #       Gives a user's string a percentage value for each tag in json file
 #       we will check to see if percentage chance is greater then 75%
 #       if so, we will assume the question is that of the json tag and respond
