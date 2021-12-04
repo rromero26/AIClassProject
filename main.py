@@ -1,7 +1,7 @@
 # AI Class Project: CSUF Portal Bot
 # Peter Bergeon, Brian Edwards, Ryan Romero
 
-# ----- Libraries here -----
+# ----- Libraries -----
 import random
 import json
 import pickle
@@ -10,6 +10,7 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 from tensorflow.keras.models import load_model
 
+# ----- Setup -----
 lemmatizer = WordNetLemmatizer()
 with open("intents.json") as file:
     data = json.load(file)
@@ -19,7 +20,7 @@ classes = pickle.load(open("classes.pkl", "rb"))
 model = load_model("chatbot_Model.h5")
 
 
-# --- Helper Functions ---
+# ----- Helper Functions -----
 
 # clean_up_sentences:
 #       lowercase and stems words to their root word
@@ -42,9 +43,10 @@ def bag_of_words(userString):
     return np.array(bag)
 
 # chatBot
-#       calculate the user's string a percentage value for each tag in json file
-#       we will check to see if percentage chance is greater then 70%
+#       Gives a user's string a percentage value for each tag in json file
+#       we will check to see if percentage chance is greater then 75%
 #       if so, we will assume the question is that of the json tag and respond
+#       if below 75%, bot will print out a "I dont understand" message
 def chatBot(userString):
     currentBag = bag_of_words(userString)
     result = model.predict(np.array([currentBag]))[0]
@@ -54,8 +56,8 @@ def chatBot(userString):
     # get the tag associated to the highest numerical value prediction
     tag = classes[result_index]
 
-    # If percentage is greater then 70%
-    if result[result_index] > 0.7:
+    # If percentage is greater then 75%
+    if result[result_index] > 0.75:
         # we grab the list of responds and choose one at random
         for tg in data["intents"]:
             if tg["tag"] == tag:
@@ -71,5 +73,7 @@ def chatBot(userString):
 
 # ----- Main -----
 while True:
+    print("-------------------------------------------------------------------")
     userString = input("You: ")
+    print(" ")
     chatBot(userString)
