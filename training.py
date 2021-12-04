@@ -1,28 +1,27 @@
 # What Does This File Do?
 #   this file is run before main and used to train the bot with the dataset in
-#   the json file. Everytime dataset is modified, the bot must be re-trained.
-
+#   the json file. Everytime dataset is modified, the bot must be re-trained. Only
+#   need to run this file once to create the AI model. (rerun if dataset is modified)
 import random
 import json
 import pickle
 import numpy as np                              # Must install library via command line
 import nltk                                     # Must install library via command line
-
 from nltk.stem import WordNetLemmatizer
 from tensorflow.keras.models import Sequential  # Must install library via command line
 from tensorflow.keras.layers import Dense, Activation, Dropout
 from tensorflow.keras.optimizers import SGD
-
 lemmatizer = WordNetLemmatizer()
+
 
 # Open json file and load in the dataset into variable "data"
 with open("intents.json") as file:
     data = json.load(file)
 
 # create lists. (Dataset from json file will be organized into these lists)
-words = []
-classes = []
-docs = []
+words = []              # will hold a complete list of keywords ('patterns' in json)
+classes = []            # hold a list of all the tags in the json file
+docs = []               # dictonary of tags and their coresponding list of keywords (tags/pattern)
 ignore_characters = ['?', '!', '.', ',']
 
 # parse through the data and save it into lists
@@ -41,17 +40,21 @@ words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_chara
 words = sorted(set(words))
 classes = sorted(set(classes))
 
-# create files to save "words" and "classes" lists (as writing binary)
+# create files to save "words" and "classes" lists
 pickle.dump(words, open("words.pkl", "wb"))
 pickle.dump(classes, open("classes.pkl", "wb"))
 
 # CHECKPOINT:
-#   So far, we have a complete list of stem words that function like keywords.
-#   We also have a list of tags which are the name of each chunk in the json file.
-#   We also have a list that connect a tag with it corresponding list of keywords
+#   So far, we have a complete List-of-root-Words that function like keywords.          ("words" list)
+#   We also have a List-of-Tags which are the header of each chunk in the json file.    ("classes" list)
+#   We also have a list that connect a Tag with it corresponding List-of-Keywords       ("doc" list)
+# print("List of Tags: ", classes, "\n")
+# print("Complete list of Words:", words, "\n")
+# print("Docs dictonary: ", docs, "\n")
+# exit()
 
 
-# TRAINING BEGINS (Deep Learning)
+# PREPARE DATA FOR BOT TRAINING:
 #   Will be using a one-hot encoded strategy. We will create a binary list the same size
 #   as the complete list of words, each bit representing a word in that list.
 #   We have list of words and character but need numerical values to feed to
@@ -74,22 +77,30 @@ for document in docs:                       # create bag of words
     output_Row = list(output_Empty)
     output_Row[classes.index(document[1])] = 1
     training.append([bag, output_Row])
+    # print("current Tag: ",document[1], " = ", output_Row, "\n")
+    # print("Current Tag's bag-of-words: ",word_Pattern, " = ",  bag, "\n")
 
 # CHECKPOINT:
-#   Every tag now has a binary list, that the size of the complete list of keywords, with 0s and 1s
-#   representing the words that are present in their list of words.
+#   Every Tag and it's corresponding Bag-of-Words have been turn to binary lists.
 #   example:
-#       Complete list = {hello, goodbye, morning, advising, schedule}
+#       Words = {hello, goodbye, morning, advising, schedule}
 #           Greetings Bag    = {1, 0, 1, 0, 0}
 #           Farewell Bag     = {0, 1, 0, 0, 0}
 #           Advising bag     = {0, 0, 0, 1, 1}
 #
-#   binary word bags and their coresponding tags (also in binary) are then saved
-#   into dictoary "training" which will be fed into the neural network next.
+#       Tags = {greetings, farewell, advising}
+#           Greeting Tag      = {1, 0, 0}
+#           Advising Tag      = {0, 0, 1}
+#           Farewell Tag      = {0, 1, 0}
+#
+#   We then save the binary Tag and it corresponding binary Bag-of-Words into a
+#   dictonary named 'training'
+# print("Training Dictonary: ", training, "\n")
+# exit()
 
 
 
-# shuffle training data and converting it to array (string to numbers)
+# shuffle training data and converting it to array
 random.shuffle(training)
 training = np.array(training)
 
@@ -100,6 +111,7 @@ training_Y = list(training[:, 1])
 
 # ---------------------------------------------------------------------------
 # The AI (The neural network, copied from NeuralNine tutorial "Intelligent AI Chatbot")
+#   todo: explain what going on
 
 model = Sequential()
 model.add(Dense(128, input_shape=(len(training_X[0]),), activation='relu'))
@@ -111,9 +123,6 @@ sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 myModel = model.fit(np.array(training_X), np.array(training_Y), epochs=200, batch_size=5, verbose=1)
 
+# the AI has been train, save training model into a file that can now be access
 model.save('chatbot_Model.h5', myModel)
-print("Done")
-
-# ---------------------------------------------------------------------------
-
-# The AI (simple neural network)
+print("---Done---")
