@@ -19,36 +19,36 @@ with open("intents.json") as file:
     data = json.load(file)
 
 # create lists. (Dataset from json file will be organized into these lists)
-words = []              # will hold a complete list of keywords ('patterns' in json)
-classes = []            # hold a list of all the tags in the json file
-docs = []               # dictonary of tags and their coresponding list of keywords (tags/pattern)
+words = []              # will hold a complete list of keywords ('keywords' in json)
+topics = []            # hold a list of all the topics in the json file
+docs = []               # dictonary of topics and their coresponding list of keywords (topics/keyword)
 ignore_characters = ['?', '!', '.', ',']
 
 # parse through the data and save it into lists
-for intent in data["intents"]:                      # parse every "tag" chunk
-    for pattern in intent["patterns"]:              # grabs list of words in "patterns" of current "tag"
-        word_List = nltk.word_tokenize(pattern)     # tokenize words
+for intent in data["intents"]:                      # parse every "topic" chunk
+    for keyword in intent["keywords"]:              # grabs list of words in "keywords" of current "topic"
+        word_List = nltk.word_tokenize(keyword)     # tokenize words
         words.extend(word_List)                     # add it to a complete list of words
-        docs.append((word_List, intent["tag"]))     # assigns current list of words to the current "tag" (greetings = hello, hey, whats up, ...)
+        docs.append((word_List, intent["topic"]))     # assigns current list of words to the current "topic" (greetings = hello, hey, whats up, ...)
 
-    # saves list of "tags" (classes)
-    if intent["tag"] not in classes:                # (classes = greetings, bye, advising, ...)
-        classes.append(intent["tag"])
+    # saves list of "topics"
+    if intent["topic"] not in topics:                # (topics = greetings, bye, advising, ...)
+        topics.append(intent["topic"])
 
-# lematize (stem) "words" and remove duplicates in lists 'words" and "classes"
+# lematize (stem) "words" and remove duplicates in lists 'words" and "topics"
 words = [lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_characters]
 words = sorted(set(words))
-classes = sorted(set(classes))
+topics = sorted(set(topics))
 
-# create files to save "words" and "classes" lists
+# create files to save "words" and "topics" lists
 pickle.dump(words, open("words.pkl", "wb"))
-pickle.dump(classes, open("classes.pkl", "wb"))
+pickle.dump(topics, open("topics.pkl", "wb"))
 
 # CHECKPOINT:
 #   So far, we have a complete List-of-root-Words that function like keywords.          ("words" list)
-#   We also have a List-of-Tags which are the header of each chunk in the json file.    ("classes" list)
-#   We also have a list that connect a Tag with it corresponding List-of-Keywords       ("doc" list)
-# print("List of Tags: ", classes, "\n")
+#   We also have a List-of-topics which are the header of each chunk in the json file.    ("topics" list)
+#   We also have a list that connect a topic with it corresponding List-of-Keywords       ("doc" list)
+# print("List of topics: ", topics, "\n")
 # print("Complete list of Words:", words, "\n")
 # print("Docs dictonary: ", docs, "\n")
 # exit()
@@ -60,40 +60,40 @@ pickle.dump(classes, open("classes.pkl", "wb"))
 #   We have list of words and character but need numerical values to feed to
 #   the neural network which trains the AI bot.
 training = []
-output_Empty = [0] * len(classes)          # inital binary list of classes (tags)
+output_Empty = [0] * len(topics)          # inital binary list of topics (topics)
 
 for document in docs:                       # create bag of words
     bag = []
-    word_Pattern = document[0]              # document[0] = the list of key words of current tag
-    word_Pattern = [lemmatizer.lemmatize(w.lower()) for w in word_Pattern]
+    word_keyword = document[0]              # document[0] = the list of key words of current topic
+    word_keyword = [lemmatizer.lemmatize(w.lower()) for w in word_keyword]
 
-    # compare each word in complete list of keywords to current tag's list of keywords
+    # compare each word in complete list of keywords to current topic's list of keywords
     for w in words:
-        if w in word_Pattern:               # IF: it exist in current tag's list of words, append 1
+        if w in word_keyword:               # IF: it exist in current topic's list of words, append 1
             bag.append(1)
-        else:                               # ELSE: does not exist in current tag's list of words, append 0
+        else:                               # ELSE: does not exist in current topic's list of words, append 0
             bag.append(0)
 
     output_Row = list(output_Empty)
-    output_Row[classes.index(document[1])] = 1
+    output_Row[topics.index(document[1])] = 1
     training.append([bag, output_Row])
-    # print("current Tag: ",document[1], " = ", output_Row, "\n")
-    # print("Current Tag's bag-of-words: ",word_Pattern, " = ",  bag, "\n")
+    # print("current topic: ",document[1], " = ", output_Row, "\n")
+    # print("Current topic's bag-of-words: ",word_keyword, " = ",  bag, "\n")
 
 # CHECKPOINT:
-#   Every Tag and it's corresponding Bag-of-Words have been turn to binary lists.
+#   Every topic and it's corresponding Bag-of-Words have been turn to binary lists.
 #   example:
 #       Words = {hello, goodbye, morning, advising, schedule}
 #           Greetings Bag    = {1, 0, 1, 0, 0}
 #           Farewell Bag     = {0, 1, 0, 0, 0}
 #           Advising bag     = {0, 0, 0, 1, 1}
 #
-#       Tags = {greetings, farewell, advising}
-#           Greeting Tag      = {1, 0, 0}
-#           Advising Tag      = {0, 0, 1}
-#           Farewell Tag      = {0, 1, 0}
+#       topics = {greetings, farewell, advising}
+#           Greeting topic      = {1, 0, 0}
+#           Advising topic      = {0, 0, 1}
+#           Farewell topic      = {0, 1, 0}
 #
-#   We then save the binary Tag and it corresponding binary Bag-of-Words into a
+#   We then save the binary topic and it corresponding binary Bag-of-Words into a
 #   dictonary named 'training'
 # print("Training Dictonary: ", training, "\n")
 # exit()
@@ -104,7 +104,7 @@ for document in docs:                       # create bag of words
 random.shuffle(training)
 training = np.array(training)
 
-# spit training data into X (word bags) and Y (tags)
+# spit training data into X (word bags) and Y (topics)
 training_X = list(training[:, 0])
 training_Y = list(training[:, 1])
 
