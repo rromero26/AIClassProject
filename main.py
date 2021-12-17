@@ -59,13 +59,13 @@ def chatBot(userString):
     # print("Highest Result Index: ", result_index, "\n")
 
     # get the tag associated to the highest numerical value prediction
-    tag = classes[result_index]
+    topic = classes[result_index]
 
     # IF: percentage is greater then 75%
-    if result[result_index] > 0.75:
+    if result[result_index] > 0.80:
         # we grab the list of responds and choose one at random
         for tg in data["intents"]:
-            if tg["tag"] == tag:
+            if tg["topic"] == topic:
                 responses = tg['responses']
         print(random.choice(responses))
 
