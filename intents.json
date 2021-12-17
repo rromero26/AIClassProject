@@ -28,33 +28,33 @@
       "context": [""]
     },
     {
-      "topic": "calender",
+      "topic": "calendar",
       "keywords": ["days off", "academic calendar", "break", "holidays", "no school"],
-      "responses": ["Bot: You can view the academic calender here: https:\/\/apps.fullerton.edu\/AcademicCalendar"],
+      "responses": ["Bot: You can view the academic calendar here: \nhttps:\/\/apps.fullerton.edu\/AcademicCalendar"],
       "context": [""]
     },
     {
       "topic": "canvas",
       "keywords": ["my canvas", "canvas"],
-      "responses": ["Bot: Log into the CSUF Portal and use this link to get to your canvas dashboard: https:\/\/csufullerton.instructure.com"],
+      "responses": ["Bot: Log into the CSUF Portal and use this link to get to your canvas dashboard: \nhttps:\/\/csufullerton.instructure.com"],
       "context": [""]
     },
     {
       "topic": "counseling",
       "keywords": ["counseling", "depression", "stress", "not feeling good", "schedule", "appointment"],
-      "responses": ["BOT: If you need help immediately, call (800) 273-8255 for Natioanl Suicide Prevention Lifeline \n \nIf you like to schedule an appointment with a CSUF councelor, call the Counseling & Psychology Service number (657) 278-3040. \nWe offer counseling for individial, couple, group, psychiatric and crisis. For more information visit: https:\/\/www.fullerton.edu\/caps\/services\/appointments\/appointment.php"],
+      "responses": ["BOT: If you like to schedule an appointment with a CSUF councelor, call the Counseling & Psychology Service number: (657) 278-3040. \n \nWe offer counseling for individial, couple, group, psychiatric and crisis. \nFor more information visit: https:\/\/www.fullerton.edu\/caps\/services\/appointments\/appointment.php \n \nIf you need help immediately, call (800) 273-8255 for Natioanl Suicide Prevention Lifeline."],
       "context": [""]
     },
     {
       "topic": "parking available",
       "keywords": ["parking", "parking spaces", "parking situation", "nutwood structure", "state college structure", "eastside structure", "lot A or Lot G"],
-      "responses": ["Bot: You can view the available parking spot here: https:\/\/parking.fullerton.edu\/ParkingLotCounts\/mobile.aspx"],
+      "responses": ["Bot: You can view the available parking here: \nhttps:\/\/parking.fullerton.edu\/ParkingLotCounts\/mobile.aspx"],
       "context": [""]
     },
     {
      "topic": "parking service",
      "keywords": ["parking permit", "parking citation", "appeal", "car", "register vehicle"],
-     "responses": ["Bot: Log into the CSUF Portal and use this link to go to the Parking Portal: https:\/\/csufparking.t2hosted.com\/Account\/Portal \n \nHere you can view parking services: permits, parking citations, and vehicle registration"],
+     "responses": ["Bot: Log into the CSUF Portal and use this link to go to the Parking Portal: \nhttps:\/\/csufparking.t2hosted.com\/Account\/Portal \n \nHere you can view parking services: permits, parking citations, and vehicle registration"],
      "context": [""]
    }
 
