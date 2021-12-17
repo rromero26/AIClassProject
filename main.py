@@ -17,7 +17,7 @@ with open("intents.json") as file:
     data = json.load(file)
 
 words = pickle.load(open("words.pkl", "rb"))
-classes = pickle.load(open("classes.pkl", "rb"))
+topics = pickle.load(open("topics.pkl", "rb"))
 model = load_model("chatbot_Model.h5")
 
 
@@ -44,9 +44,9 @@ def bag_of_words(userString):
     return np.array(bag)
 
 # chatBot:
-#       Gives a user's string a percentage value for each tag in json file
+#       Gives a user's string a percentage value for each topic in json file
 #       we will check to see if percentage chance is greater then 75%
-#       if so, we will assume the question is that of the json tag and respond
+#       if so, we will assume the question is that of the json topic and respond
 #       if below 75%, bot will print out a "I dont understand" message
 def chatBot(userString):
     currentBag = bag_of_words(userString)
@@ -58,8 +58,8 @@ def chatBot(userString):
     result_index = np.argmax(result)
     # print("Highest Result Index: ", result_index, "\n")
 
-    # get the tag associated to the highest numerical value prediction
-    topic = classes[result_index]
+    # get the topic associated to the highest numerical value prediction
+    topic = topics[result_index]
 
     # IF: percentage is greater then 75%
     if result[result_index] > 0.80:
