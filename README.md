@@ -9,13 +9,14 @@ We will be creating a conversational AI bot that users can ask questions specifi
 To respond to the users questions, the bot will take the user’s question string, analyze for certain keywords. With these keywords, it determines what the user may be asking and spit out text responding to the user’s inquiry. If the bot does not have sufficient keywords to pinpoint a proper response, it will ask the user questions until it has enough keyword information to determine what to respond.
 
 # How to Run
-Before running the python files, make sure you have the following libraries installed:
+Before running the python files, make sure you have the following libraries installed on your workstation:
 - numpy
 - nltk  (natural language toolkit)
 - tensorflow
 
-1. Open terminal in the AI project files
-2. Run "training.py" first (will take a few seconds for training model to complete)
-3. Run "main.py" second
 
- 
+1. Download the files and save them to any desired location on your computer
+2. Open terminal and navigate to the AI project files
+3. Run "training.py" first (will take a few seconds for training model to complete)
+4. Run "main.py" second
+
